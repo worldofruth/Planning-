@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Emploi du Temps — Étape 1</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0d0d14;
+    --card: #13131f;
+    --border: rgba(255,255,255,0.07);
+    --gold: #f5c842;
+    --pink: #e8449a;
+    --violet: #7b5cf0;
+    --teal: #2ec4b6;
+    --coral: #ff6b6b;
+    --text: #e8e8f0;
+    --muted: #6b6b8a;
+  }
+
+  body {
+    background: var(--bg);
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text);
+    min-height: 100vh;
+    padding: 40px 32px;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    top: -200px; left: -200px;
+    width: 700px; height: 700px;
+    background: radial-gradient(circle, rgba(123,92,240,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  body::after {
+    content: '';
+    position: fixed;
+    bottom: -200px; right: -200px;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(232,68,154,0.10) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .header {
+    margin-bottom: 40px;
+    border-left: 4px solid var(--gold);
+    padding-left: 20px;
+  }
+
+  .header .etape {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 13px;
+    letter-spacing: 4px;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .header h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(28px, 4vw, 46px);
+    letter-spacing: 2px;
+    color: var(--text);
+    line-height: 1.1;
+  }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 36px;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .legend-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .days-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .day-row {
+    display: grid;
+    grid-template-columns: 100px 1fr;
+    gap: 16px;
+    align-items: start;
+    animation: fadeUp 0.5s ease both;
+  }
+  .day-row:nth-child(1) { animation-delay: 0.05s; }
+  .day-row:nth-child(2) { animation-delay: 0.1s; }
+  .day-row:nth-child(3) { animation-delay: 0.15s; }
+  .day-row:nth-child(4) { animation-delay: 0.2s; }
+  .day-row:nth-child(5) { animation-delay: 0.25s; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .day-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding-top: 14px;
+    gap: 4px;
+  }
+
+  .day-number {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 42px;
+    line-height: 1;
+    color: var(--text);
+    opacity: 0.15;
+  }
+
+  .day-word {
+    font-size: 9px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .day-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--gold);
+    margin-top: 8px;
+    box-shadow: 0 0 10px var(--gold);
+  }
+
+  .events {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .event {
+    display: grid;
+    grid-template-columns: 90px 1fr auto;
+    align-items: center;
+    gap: 14px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 16px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .event::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    border-radius: 3px 0 0 3px;
+  }
+
+  .event.module::before { background: var(--gold); }
+  .event.atelier::before { background: var(--violet); }
+  .event.virtuelle::before { background: var(--pink); }
+  .event.rdv::before { background: var(--teal); }
+  .event.cas::before { background: var(--coral); }
+
+  .event-time {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+
+  .event-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    line-height: 1.4;
+  }
+
+  .event-title .sub {
+    display: block;
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  .event-tag {
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 20px;
+    white-space: nowrap;
+    font-weight: 600;
+  }
+
+  .event.module .event-tag { background: rgba(245,200,66,0.12); color: var(--gold); }
+  .event.atelier .event-tag { background: rgba(123,92,240,0.15); color: var(--violet); }
+  .event.virtuelle .event-tag { background: rgba(232,68,154,0.15); color: var(--pink); }
+  .event.rdv .event-tag { background: rgba(46,196,182,0.15); color: var(--teal); }
+  .event.cas .event-tag { background: rgba(255,107,107,0.15); color: var(--coral); }
+
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 4px 0;
+  }
+
+  @media (max-width: 600px) {
+    .event { grid-template-columns: 75px 1fr; }
+    .event-tag { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="etape">Étape 1</div>
+  <h1>Analyser son environnement<br>pour construire une offre pertinente</h1>
+</div>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:#f5c842"></div> Module de formation</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#7b5cf0"></div> Atelier collaboratif</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#e8449a"></div> Classe virtuelle</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#2ec4b6"></div> RDV / Expert</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#ff6b6b"></div> Analyse de cas</div>
+</div>
+
+<div class="days-grid">
+
+  <!-- JOUR 1 -->
+  <div class="day-row">
+    <div class="day-label">
+      <div class="day-number">1</div>
+      <div class="day-word">Jour</div>
+      <div class="day-dot"></div>
+    </div>
+    <div class="events">
+      <div class="event rdv">
+        <div class="event-time">9h – 10h30</div>
+        <div class="event-title">Onboarding — Découverte plateforme</div>
+        <div class="event-tag">RDV</div>
+      </div>
+      <div class="event module">
+        <div class="event-time">10h30 – 16h</div>
+        <div class="event-title">Conduite d'un projet entrepreneurial</div>
+        <div class="event-tag">Module</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JOUR 2 -->
+  <div class="day-row">
+    <div class="day-label">
+      <div class="day-number">2</div>
+      <div class="day-word">Jour</div>
+      <div class="day-dot"></div>
+    </div>
+    <div class="events">
+      <div class="event module">
+        <div class="event-time">9h – 11h</div>
+        <div class="event-title">Conduite d'un projet entrepreneurial</div>
+        <div class="event-tag">Module</div>
+      </div>
+      <div class="event atelier">
+        <div class="event-time">11h30 – 14h</div>
+        <div class="event-title">Ajuster son cap entrepreneurial <span class="sub">avec YARA</span></div>
+        <div class="event-tag">Atelier</div>
+      </div>
+      <div class="event virtuelle">
+        <div class="event-time">15h – 17h</div>
+        <div class="event-title">Analysez le marché & opportunités avec l'IA<span class="sub">+ Décrypter les tendances du marché avec l'IA</span></div>
+        <div class="event-tag">Virtuelle</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JOUR 3 -->
+  <div class="day-row">
+    <div class="day-label">
+      <div class="day-number">3</div>
+      <div class="day-word">Jour</div>
+      <div class="day-dot"></div>
+    </div>
+    <div class="events">
+      <div class="event module">
+        <div class="event-time">9h – 12h</div>
+        <div class="event-title">Stratégie d'entreprise & vision entrepreneuriale</div>
+        <div class="event-tag">Module</div>
+      </div>
+      <div class="event rdv">
+        <div class="event-time">12h – 12h30</div>
+        <div class="event-title">Coaching mentor</div>
+        <div class="event-tag">RDV</div>
+      </div>
+      <div class="event atelier">
+        <div class="event-time">14h – 16h</div>
+        <div class="event-title">Veille écosystème <span class="sub">avec YARA</span></div>
+        <div class="event-tag">Atelier</div>
+      </div>
+      <div class="event virtuelle">
+        <div class="event-time">16h – 17h30</div>
+        <div class="event-title">Décisions stratégiques grâce à l'IA<span class="sub">+ Affinez votre stratégie de communication avec l'IA</span></div>
+        <div class="event-tag">Virtuelle</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JOUR 4 -->
+  <div class="day-row">
+    <div class="day-label">
+      <div class="day-number">4</div>
+      <div class="day-word">Jour</div>
+      <div class="day-dot"></div>
+    </div>
+    <div class="events">
+      <div class="event rdv">
+        <div class="event-time">11h30 – 12h30</div>
+        <div class="event-title">Rédaction dossier projet <span class="sub">en autonomie</span></div>
+        <div class="event-tag">Autonomie</div>
+      </div>
+      <div class="event rdv">
+        <div class="event-time">12h30 – 13h30</div>
+        <div class="event-title">RDV Expert — Structurer son projet entrepreneurial</div>
+        <div class="event-tag">Expert</div>
+      </div>
+      <div class="event atelier">
+        <div class="event-time">14h – 16h</div>
+        <div class="event-title">Construire sa vision <span class="sub">avec YARA</span></div>
+        <div class="event-tag">Atelier</div>
+      </div>
+      <div class="event cas">
+        <div class="event-time">14h30 – 16h</div>
+        <div class="event-title">Succès de Michel & Augustin<span class="sub">+ Kodak et le pivot du numérique</span></div>
+        <div class="event-tag">Cas</div>
+      </div>
+      <div class="event module">
+        <div class="event-time">16h – 17h</div>
+        <div class="event-title">Stratégie d'entreprise & vision entrepreneuriale</div>
+        <div class="event-tag">Module</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JOUR 5 -->
+  <div class="day-row">
+    <div class="day-label">
+      <div class="day-number">5</div>
+      <div class="day-word">Jour</div>
+      <div class="day-dot"></div>
+    </div>
+    <div class="events">
+      <div class="event module">
+        <div class="event-time">9h – 11h30</div>
+        <div class="event-title">Stratégie d'entreprise & vision entrepreneuriale</div>
+        <div class="event-tag">Module</div>
+      </div>
+      <div class="event module">
+        <div class="event-time">16h – 17h</div>
+        <div class="event-title">Stratégie d'entreprise & vision entrepreneuriale</div>
+        <div class="event-tag">Module</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
